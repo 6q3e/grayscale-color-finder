@@ -5,7 +5,7 @@
   <title>Grayscale Color Finder</title>
   <style>
     body { font-family: sans-serif; padding: 20px; }
-    canvas { border: 1px solid #ccc; margin-bottom: 10px; }
+    canvas { border: 1px solid #ccc; margin-bottom: 10px; display: block; }
     #color-info { margin-top: 10px; }
     .color-box {
       display: inline-block;
@@ -26,63 +26,78 @@
   <div id="color-info"></div>
 
   <script>
-    const imageLoader = document.getElementById('imageLoader');
-    const canvas = document.getElementById('imageCanvas');
-    const ctx = canvas.getContext('2d');
-    const colorInfo = document.getElementById('color-info');
+    document.addEventListener('DOMContentLoaded', () => {
+      const imageLoader = document.getElementById('imageLoader');
+      const canvas = document.getElementById('imageCanvas');
+      const ctx = canvas.getContext('2d');
+      const colorInfo = document.getElementById('color-info');
+      let lastGray = 128;
 
-    imageLoader.addEventListener('change', handleImage, false);
-    canvas.addEventListener('click', handleClick);
+      imageLoader.addEventListener('change', handleImage, false);
+      canvas.addEventListener('click', handleClick);
 
-    function handleImage(e) {
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        const img = new Image();
-        img.onload = function() {
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx.drawImage(img, 0, 0);
+      function handleImage(e) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const img = new Image();
+          img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+          };
+          img.src = event.target.result;
         };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(e.target.files[0]);
-    }
-    let pixelData = [0, 0, 0]; // グローバルに定義して保持
+        reader.readAsDataURL(e.target.files[0]);
+      }
 
-    function handleClick(e) {
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  const pixel = ctx.getImageData(x, y, 1, 1).data;
-  pixelData = [pixel[0], pixel[1], pixel[2]]; // ← グローバル変数に格納
-  const [r, g, b] = pixelData;
-  const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
-  colorInfo.innerHTML = `
-    <p>クリック座標: (${Math.floor(x)}, ${Math.floor(y)})</p>
-    <p>RGB: ${r}, ${g}, ${b}</p>
-    <p>グレースケール値: ${gray}</p>
-    <p>このグレーになる色候補（例）:</p>
-    <div class="color-box" style="background-color: rgb(${gray},0,0);"></div>
-    <div class="color-box" style="background-color: rgb(0,${gray},0);"></div>
-    <div class="color-box" style="background-color: rgb(0,0,${gray});"></div>
-  `;
-}
+      function handleClick(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const pixel = ctx.getImageData(x, y, 1, 1).data;
+        const [r, g, b] = pixel;
+        const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+        lastGray = gray;
 
-    rSlider.addEventListener('input', () => {
-    const R = parseInt(rSlider.value);
-    rVal.textContent = R;
+        colorInfo.innerHTML = `
+          <p>クリック座標: (${Math.floor(x)}, ${Math.floor(y)})</p>
+          <p>RGB: ${r}, ${g}, ${b}</p>
+          <p>グレースケール値: ${gray}</p>
+          <p>このグレーになる色候補（例）:</p>
+          <div class="color-box" style="background-color: rgb(${gray},0,0);"></div>
+          <div class="color-box" style="background-color: rgb(0,${gray},0);"></div>
+          <div class="color-box" style="background-color: rgb(0,0,${gray});"></div>
+        `;
 
-    const gray = Math.round(0.299 * pixelData[0] + 0.587 * pixelData[1] + 0.114 * pixelData[2]);
-    const G = 0;
-    const B = Math.max(0, Math.min(255, Math.round((gray - 0.299 * R - 0.587 * G) / 0.114)));
+        // スライダー UI を作成して追加
+        const sliderContainer = document.createElement('div');
+        sliderContainer.innerHTML = `
+          <p>このグレースケール値になる色を作る：R 値を調整</p>
+          <input type="range" min="0" max="255" value="128" id="rRange">
+          <span id="rValue">128</span>
+          <div class="color-box" id="colorPreview"></div>
+          <p id="colorInfoOut"></p>
+        `;
+        colorInfo.appendChild(sliderContainer);
 
-    colorPreview.style.backgroundColor = `rgb(${R},${G},${B})`;
-    const hex = `#${R.toString(16).padStart(2, '0')}${G.toString(16).padStart(2, '0')}${B.toString(16).padStart(2, '0')}`;
+        // DOM に追加後に要素を取得
+        const rSlider = document.getElementById('rRange');
+        const rVal = document.getElementById('rValue');
+        const colorPreview = document.getElementById('colorPreview');
+        const colorInfoOut = document.getElementById('colorInfoOut');
 
-    colorInfoOut.innerHTML = `
-        RGB: (${R}, ${G}, ${B})<br>
-        HEX: ${hex}
-  `     ;
+        rSlider.addEventListener('input', () => {
+          const R = parseInt(rSlider.value);
+          rVal.textContent = R;
+
+          const G = 0; // 固定
+          const B = Math.max(0, Math.min(255, Math.round((lastGray - 0.299 * R - 0.587 * G) / 0.114)));
+
+          colorPreview.style.backgroundColor = `rgb(${R},${G},${B})`;
+          const hex = `#${R.toString(16).padStart(2, '0')}${G.toString(16).padStart(2, '0')}${B.toString(16).padStart(2, '0')}`;
+          colorInfoOut.innerHTML = `RGB: (${R}, ${G}, ${B})<br>HEX: ${hex}`;
+        });
+      }
     });
   </script>
 </body>
