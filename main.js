@@ -59,7 +59,32 @@ function handleCanvasClick(e) {
   bSlider.value = b;
 
   updateColorFromSlider();
+  updateSliderLimits();
 }
+
+function updateSliderLimits() {
+    const gray = currentGray;
+  
+    // G, Bの現在値からRの範囲を計算
+    const g = parseInt(gSlider.value);
+    const b = parseInt(bSlider.value);
+    const rMin = clamp(Math.ceil((gray - 0.587 * g - 0.114 * 255) / 0.299), 0, 255);
+    const rMax = clamp(Math.floor((gray - 0.587 * g - 0.114 * 0) / 0.299), 0, 255);
+    rSlider.min = rMin;
+    rSlider.max = rMax;
+  
+    const r = parseInt(rSlider.value);
+    const bGMin = clamp(Math.ceil((gray - 0.299 * r - 0.114 * 255) / 0.587), 0, 255);
+    const gMax = clamp(Math.floor((gray - 0.299 * r - 0.114 * 0) / 0.587), 0, 255);
+    gSlider.min = bGMin;
+    gSlider.max = gMax;
+  
+    const gVal = parseInt(gSlider.value);
+    const bMin = clamp(Math.ceil((gray - 0.299 * r - 0.587 * gVal) / 0.114), 0, 255);
+    const bMax = clamp(Math.floor((gray - 0.299 * r - 0.587 * gVal) / 0.114), 0, 255);
+    bSlider.min = bMin;
+    bSlider.max = bMax;
+  }  
 
 function handleSliderInput(changed) {
     if (lock) return;
@@ -104,6 +129,7 @@ function handleSliderInput(changed) {
   
     drawColorPalette(R, G, B);
   
+    updateSliderLimits();
     lock = false;
   }  
 
