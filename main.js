@@ -45,6 +45,8 @@ function handleImage(e) {
 }
 
 function handleCanvasClick(e) {
+  document.getElementById('sliderContainer').classList.remove('hidden');
+  
   const rect = imageCanvas.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
