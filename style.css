@@ -24,18 +24,23 @@ body {
   }
   
   #canvasWrapper {
-    flex: 1;
     width: 100%;
-    overflow: hidden;
+    height: 100%;
+    max-width: 800px;
+    max-height: 600px;
+    overflow: scroll;
+    border: 1px solid #aaa;
     position: relative;
   }
   
   #imageCanvas {
-    border: 1px solid #ccc;
+    display: block;
     cursor: grab;
-    transition: transform 0.1s;
-    user-select: none;
   }
+  
+  #imageCanvas.dragging {
+    cursor: grabbing;
+  }  
   
   .right-panel {
     width: 40%;

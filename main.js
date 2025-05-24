@@ -24,9 +24,12 @@ let lastValidRGB = { R: 128, G: 128, B: 128 }; // 最後に有効だったRGBを
 
 // === 追加: ズーム・ドラッグ処理 ===
 let scale = 1;
-let originX = 0, originY = 0;
+let offsetX = 0;
+let offsetY = 0;
 let isDragging = false;
-let dragStart = { x: 0, y: 0 };
+let dragStartX = 0;
+let dragStartY = 0;
+let img = null;
 
 // ページロード時に関連UIを非表示にする
 const colorTools = document.getElementById('colorTools');
@@ -40,54 +43,79 @@ bSlider.addEventListener('input', () => handleSliderInput('B'));
 
 const canvasWrapper = document.getElementById("canvasWrapper");
 
-imageCanvas.addEventListener("wheel", (e) => {
+imageCanvas.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    imageCanvas.classList.add('dragging');
+  });
+  
+  imageCanvas.addEventListener('mouseup', () => {
+    isDragging = false;
+    imageCanvas.classList.remove('dragging');
+  });
+  
+  imageCanvas.addEventListener('mouseleave', () => {
+    isDragging = false;
+    imageCanvas.classList.remove('dragging');
+  });
+  
+  imageCanvas.addEventListener('mousemove', (e) => {
+    if (!isDragging || !img) return;
+    const dx = e.clientX - dragStartX;
+    const dy = e.clientY - dragStartY;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    offsetX -= dx / scale;
+    offsetY -= dy / scale;
+    clampOffset();
+    drawImage();
+  });
+  
+  imageCanvas.addEventListener('wheel', (e) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? -0.1 : 0.1;
-    scale = Math.min(Math.max(scale + delta, 0.1), 5);
-    updateTransform();
-  });
+    const newScale = clamp(scale + delta, 0.1, 10);
+    scale = newScale;
+    clampOffset();
+    drawImage();
+  }, { passive: false });
+
+function clampOffset() {
+    if (!img) return;
+    const maxX = Math.max(0, img.width - imageCanvas.width / scale);
+    const maxY = Math.max(0, img.height - imageCanvas.height / scale);
+    offsetX = clamp(offsetX, 0, maxX);
+    offsetY = clamp(offsetY, 0, maxY);
+}
   
-  imageCanvas.addEventListener("mousedown", (e) => {
-    isDragging = true;
-    dragStart.x = e.clientX - originX;
-    dragStart.y = e.clientY - originY;
-    imageCanvas.style.cursor = "grabbing";
-  });
-  
-  imageCanvas.addEventListener("mousemove", (e) => {
-    if (isDragging) {
-      originX = e.clientX - dragStart.x;
-      originY = e.clientY - dragStart.y;
-      updateTransform();
-    }
-  });
-  
-  imageCanvas.addEventListener("mouseup", () => {
-    isDragging = false;
-    imageCanvas.style.cursor = "grab";
-  });
-  imageCanvas.addEventListener("mouseleave", () => {
-    isDragging = false;
-    imageCanvas.style.cursor = "grab";
-  });
+function drawImage() {
+    if (!img) return;
+    const w = imageCanvas.width;
+    const h = imageCanvas.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.save();
+    ctx.scale(scale, scale);
+    ctx.drawImage(img, -offsetX, -offsetY);
+    ctx.restore();
+}
 
 function handleImage(e) {
     const reader = new FileReader();
     reader.onload = function(event) {
-      const img = new Image();
+      img = new Image();
       img.onload = function() {
-        imageCanvas.width = img.width;
-        imageCanvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
+        imageCanvas.width = Math.min(img.width, 800);
+        imageCanvas.height = Math.min(img.height, 600);
         scale = 1;
-        originX = 0;
-        originY = 0;
-        updateTransform();
+        offsetX = 0;
+        offsetY = 0;
+        drawImage();
       };
       img.src = event.target.result;
     };
     reader.readAsDataURL(e.target.files[0]);
-  }
+}  
 
 function updateTransform() {
     imageCanvas.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
