@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <title>Grayscale Color Finder 🎨</title>
+  <meta charset="UTF-8">
+  <title>Grayscale Color Finder</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,7 +13,17 @@
   <canvas id="imageCanvas"></canvas>
 
   <div id="color-info"></div>
+  <div id="sliders" class="sliders">
+    <label>R: <input type="range" id="rRange" min="0" max="255" value="128"><span id="rValue">128</span></label><br>
+    <label>G: <input type="range" id="gRange" min="0" max="255" value="128"><span id="gValue">128</span></label><br>
+    <label>B: <input type="range" id="bRange" min="0" max="255" value="128"><span id="bValue">128</span></label>
+  </div>
 
-  <script src="main.js"></script>
+  <div class="color-box" id="colorPreview"></div>
+  <p id="colorInfoOut"></p>
+
+  <canvas id="colorPalette" width="256" height="256"></canvas>
+
+  <script src="script.js"></script>
 </body>
 </html>
