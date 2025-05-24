@@ -1,5 +1,3 @@
-// main.js
-
 let imageCanvas = document.getElementById('imageCanvas');
 let ctx = imageCanvas.getContext('2d');
 let colorInfo = document.getElementById('color-info');
@@ -59,79 +57,51 @@ function handleCanvasClick(e) {
   bSlider.value = b;
 
   updateColorFromSlider();
-  updateSliderLimits();
 }
 
-function updateSliderLimits() {
-    const gray = currentGray;
-  
-    // G, Bの現在値からRの範囲を計算
-    const g = parseInt(gSlider.value);
-    const b = parseInt(bSlider.value);
-    const rMin = clamp(Math.ceil((gray - 0.587 * g - 0.114 * 255) / 0.299), 0, 255);
-    const rMax = clamp(Math.floor((gray - 0.587 * g - 0.114 * 0) / 0.299), 0, 255);
-    rSlider.min = rMin;
-    rSlider.max = rMax;
-  
-    const r = parseInt(rSlider.value);
-    const bGMin = clamp(Math.ceil((gray - 0.299 * r - 0.114 * 255) / 0.587), 0, 255);
-    const gMax = clamp(Math.floor((gray - 0.299 * r - 0.114 * 0) / 0.587), 0, 255);
-    gSlider.min = bGMin;
-    gSlider.max = gMax;
-  
-    const gVal = parseInt(gSlider.value);
-    const bMin = clamp(Math.ceil((gray - 0.299 * r - 0.587 * gVal) / 0.114), 0, 255);
-    const bMax = clamp(Math.floor((gray - 0.299 * r - 0.587 * gVal) / 0.114), 0, 255);
-    bSlider.min = bMin;
-    bSlider.max = bMax;
-  }  
-
 function handleSliderInput(changed) {
-    if (lock) return;
-    lock = true;
-  
-    let R = parseInt(rSlider.value);
-    let G = parseInt(gSlider.value);
-    let B = parseInt(bSlider.value);
-    const gray = currentGray;
-  
-    if (changed === 'R') {
-      // Rが変わったら、Bを計算して制限する
-      B = Math.round((gray - 0.299 * R - 0.587 * G) / 0.114);
-      B = clamp(B, 0, 255);
-      bSlider.value = B;
-    } else if (changed === 'G') {
-      B = Math.round((gray - 0.299 * R - 0.587 * G) / 0.114);
-      B = clamp(B, 0, 255);
-      bSlider.value = B;
-    } else if (changed === 'B') {
-      G = Math.round((gray - 0.299 * R - 0.114 * B) / 0.587);
-      G = clamp(G, 0, 255);
-      gSlider.value = G;
-    }
-  
-    // 最終的にR,G,Bを再取得して、範囲を確認
-    R = clamp(parseInt(rSlider.value), 0, 255);
-    G = clamp(parseInt(gSlider.value), 0, 255);
-    B = clamp(parseInt(bSlider.value), 0, 255);
-  
-    rSlider.value = R;
-    gSlider.value = G;
-    bSlider.value = B;
-  
-    rValue.textContent = R;
-    gValue.textContent = G;
-    bValue.textContent = B;
-  
-    colorPreview.style.backgroundColor = `rgb(${R},${G},${B})`;
-    const hex = `#${toHex(R)}${toHex(G)}${toHex(B)}`;
-    colorInfoOut.innerHTML = `RGB: (${R}, ${G}, ${B})<br>HEX: ${hex}`;
-  
-    drawColorPalette(R, G, B);
-  
-    updateSliderLimits();
-    lock = false;
-  }  
+  if (lock) return;
+  lock = true;
+
+  let R = parseInt(rSlider.value);
+  let G = parseInt(gSlider.value);
+  let B = parseInt(bSlider.value);
+
+  const gray = currentGray;
+
+  // 各スライダーの入力に応じて他の値を調整
+  if (changed === 'R') {
+    const maxB = Math.floor((gray - 0.299 * R - 0.587 * G) / 0.114);
+    B = clamp(maxB, 0, 255);
+  } else if (changed === 'G') {
+    const maxB = Math.floor((gray - 0.299 * R - 0.587 * G) / 0.114);
+    B = clamp(maxB, 0, 255);
+  } else if (changed === 'B') {
+    const maxG = Math.floor((gray - 0.299 * R - 0.114 * B) / 0.587);
+    G = clamp(maxG, 0, 255);
+  }
+
+  // RGBを0~255の範囲に制限
+  R = clamp(R, 0, 255);
+  G = clamp(G, 0, 255);
+  B = clamp(B, 0, 255);
+
+  rSlider.value = R;
+  gSlider.value = G;
+  bSlider.value = B;
+
+  rValue.textContent = R;
+  gValue.textContent = G;
+  bValue.textContent = B;
+
+  colorPreview.style.backgroundColor = `rgb(${R},${G},${B})`;
+  const hex = `#${toHex(R)}${toHex(G)}${toHex(B)}`;
+  colorInfoOut.innerHTML = `RGB: (${R}, ${G}, ${B})<br>HEX: ${hex}`;
+
+  drawColorPalette(R, G, B);
+
+  lock = false;
+}
 
 function clamp(val, min, max) {
   return Math.max(min, Math.min(max, val));
@@ -171,6 +141,10 @@ function toHex(n) {
   return n.toString(16).padStart(2, '0');
 }
 
+function updateColorFromSlider() {
+  handleSliderInput('R');
+}
+
 // 初期化
 drawColorPalette(currentGray, currentGray, currentGray);
-handleSliderInput();
+updateColorFromSlider();
