@@ -69,34 +69,67 @@
           <div class="color-box" style="background-color: rgb(0,0,${gray});"></div>
         `;
 
-        // スライダー UI を作成して追加
         const sliderContainer = document.createElement('div');
         sliderContainer.innerHTML = `
-          <p>このグレースケール値になる色を作る：R 値を調整</p>
-          <input type="range" min="0" max="255" value="128" id="rRange">
-          <span id="rValue">128</span>
+          <p>このグレーになる色を作成：R, G, B を調整</p>
+          <label>R: <input type="range" min="0" max="255" value="128" id="rRange"> <span id="rValue">128</span></label><br>
+          <label>G: <input type="range" min="0" max="255" value="0" id="gRange"> <span id="gValue">0</span></label><br>
+          <label>B: <input type="range" min="0" max="255" value="0" id="bRange"> <span id="bValue">0</span></label><br>
           <div class="color-box" id="colorPreview"></div>
           <p id="colorInfoOut"></p>
         `;
         colorInfo.appendChild(sliderContainer);
 
-        // DOM に追加後に要素を取得
         const rSlider = document.getElementById('rRange');
+        const gSlider = document.getElementById('gRange');
+        const bSlider = document.getElementById('bRange');
         const rVal = document.getElementById('rValue');
+        const gVal = document.getElementById('gValue');
+        const bVal = document.getElementById('bValue');
         const colorPreview = document.getElementById('colorPreview');
         const colorInfoOut = document.getElementById('colorInfoOut');
 
-        rSlider.addEventListener('input', () => {
-          const R = parseInt(rSlider.value);
-          rVal.textContent = R;
+        function updateColorFromSlider(source) {
+          let R = parseInt(rSlider.value);
+          let G = parseInt(gSlider.value);
+          let B = parseInt(bSlider.value);
 
-          const G = 0; // 固定
-          const B = Math.max(0, Math.min(255, Math.round((lastGray - 0.299 * R - 0.587 * G) / 0.114)));
+          if (source === 'r') {
+            G = 0;
+            B = Math.round((lastGray - 0.299 * R) / 0.114);  // G=0固定
+          } else if (source === 'g') {
+            R = 0;
+            B = Math.round((lastGray - 0.587 * G) / 0.114);  // R=0固定
+          } else if (source === 'b') {
+            R = 0;
+            G = Math.round((lastGray - 0.114 * B) / 0.587);  // R=0固定
+          }
+
+          R = clamp(R); G = clamp(G); B = clamp(B);
+
+          rSlider.value = R;
+          gSlider.value = G;
+          bSlider.value = B;
+
+          rVal.textContent = R;
+          gVal.textContent = G;
+          bVal.textContent = B;
 
           colorPreview.style.backgroundColor = `rgb(${R},${G},${B})`;
           const hex = `#${R.toString(16).padStart(2, '0')}${G.toString(16).padStart(2, '0')}${B.toString(16).padStart(2, '0')}`;
           colorInfoOut.innerHTML = `RGB: (${R}, ${G}, ${B})<br>HEX: ${hex}`;
-        });
+        }
+
+        rSlider.addEventListener('input', () => updateColorFromSlider('r'));
+        gSlider.addEventListener('input', () => updateColorFromSlider('g'));
+        bSlider.addEventListener('input', () => updateColorFromSlider('b'));
+
+        // 初回実行
+        updateColorFromSlider('r');
+      }
+
+      function clamp(val) {
+        return Math.max(0, Math.min(255, Math.round(val)));
       }
     });
   </script>
