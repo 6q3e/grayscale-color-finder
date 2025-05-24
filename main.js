@@ -24,12 +24,12 @@ let lastValidRGB = { R: 128, G: 128, B: 128 }; // 最後に有効だったRGBを
 
 // === 追加: ズーム・ドラッグ処理 ===
 let scale = 1;
-let offsetX = 0;
-let offsetY = 0;
-let isDragging = false;
-let dragStartX = 0;
-let dragStartY = 0;
-let img = null;
+let minScale = 1;
+let originX = 0;
+let originY = 0;
+let dragging = false;
+let dragStart = { x: 0, y: 0 };
+let canvasImage = null;
 
 // ページロード時に関連UIを非表示にする
 const colorTools = document.getElementById('colorTools');
@@ -43,43 +43,38 @@ bSlider.addEventListener('input', () => handleSliderInput('B'));
 
 const canvasWrapper = document.getElementById("canvasWrapper");
 
-imageCanvas.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    dragStartX = e.clientX;
-    dragStartY = e.clientY;
-    imageCanvas.classList.add('dragging');
-  });
-  
-  imageCanvas.addEventListener('mouseup', () => {
-    isDragging = false;
-    imageCanvas.classList.remove('dragging');
-  });
-  
-  imageCanvas.addEventListener('mouseleave', () => {
-    isDragging = false;
-    imageCanvas.classList.remove('dragging');
-  });
-  
-  imageCanvas.addEventListener('mousemove', (e) => {
-    if (!isDragging || !img) return;
-    const dx = e.clientX - dragStartX;
-    const dy = e.clientY - dragStartY;
-    dragStartX = e.clientX;
-    dragStartY = e.clientY;
-    offsetX -= dx / scale;
-    offsetY -= dy / scale;
-    clampOffset();
-    drawImage();
-  });
-  
-  imageCanvas.addEventListener('wheel', (e) => {
+imageCanvas.addEventListener("wheel", (e) => {
     e.preventDefault();
+    const oldScale = scale;
     const delta = e.deltaY > 0 ? -0.1 : 0.1;
-    const newScale = clamp(scale + delta, 0.1, 10);
-    scale = newScale;
-    clampOffset();
+    scale = Math.max(minScale, scale + delta); // minScale以下にしない
+    if (scale === oldScale) return;
+  
     drawImage();
-  }, { passive: false });
+  });
+  
+  // ドラッグによる移動
+  imageCanvas.addEventListener("mousedown", (e) => {
+    dragging = true;
+    dragStart.x = e.clientX + canvasWrapper.scrollLeft;
+    dragStart.y = e.clientY + canvasWrapper.scrollTop;
+  });
+  
+  imageCanvas.addEventListener("mousemove", (e) => {
+    if (!dragging) return;
+    const dx = e.clientX + canvasWrapper.scrollLeft - dragStart.x;
+    const dy = e.clientY + canvasWrapper.scrollTop - dragStart.y;
+  
+    canvasWrapper.scrollLeft -= dx;
+    canvasWrapper.scrollTop -= dy;
+  
+    dragStart.x = e.clientX + canvasWrapper.scrollLeft;
+    dragStart.y = e.clientY + canvasWrapper.scrollTop;
+  });
+  
+  window.addEventListener("mouseup", () => {
+    dragging = false;
+  });
 
 function clampOffset() {
     if (!img) return;
@@ -90,32 +85,40 @@ function clampOffset() {
 }
   
 function drawImage() {
-    if (!img) return;
-    const w = imageCanvas.width;
-    const h = imageCanvas.height;
-    ctx.clearRect(0, 0, w, h);
-    ctx.save();
-    ctx.scale(scale, scale);
-    ctx.drawImage(img, -offsetX, -offsetY);
-    ctx.restore();
-}
+    if (!canvasImage) return;
+  
+    const width = canvasImage.width * scale;
+    const height = canvasImage.height * scale;
+  
+    imageCanvas.width = width;
+    imageCanvas.height = height;
+  
+    ctx.clearRect(0, 0, width, height);
+    ctx.drawImage(canvasImage, 0, 0, width, height);
+  }
 
 function handleImage(e) {
     const reader = new FileReader();
-    reader.onload = function(event) {
-      img = new Image();
-      img.onload = function() {
-        imageCanvas.width = Math.min(img.width, 800);
-        imageCanvas.height = Math.min(img.height, 600);
-        scale = 1;
-        offsetX = 0;
-        offsetY = 0;
+    reader.onload = function (event) {
+      const img = new Image();
+      img.onload = function () {
+        canvasImage = img;
+  
+        // 画像のサイズとwrapperのサイズを比較して、最小ズーム倍率を設定
+        const wrapperW = canvasWrapper.clientWidth;
+        const wrapperH = canvasWrapper.clientHeight;
+        const scaleX = wrapperW / img.width;
+        const scaleY = wrapperH / img.height;
+  
+        minScale = Math.min(scaleX, scaleY, 1); // 全体が収まる最小の倍率（ただし1未満なら縮小）
+        scale = minScale;
+  
         drawImage();
       };
       img.src = event.target.result;
     };
     reader.readAsDataURL(e.target.files[0]);
-}  
+  } 
 
 function updateTransform() {
     imageCanvas.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
