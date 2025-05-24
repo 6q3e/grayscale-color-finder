@@ -39,10 +39,6 @@ function renderSliders(r, g, b, gray, x, y) {
     <p>クリック座標: (${Math.floor(x)}, ${Math.floor(y)})</p>
     <p>RGB: ${r}, ${g}, ${b}</p>
     <p>グレースケール値: ${gray}</p>
-    <p>このグレーになる色候補（例）:</p>
-    <div class="color-box" style="background-color: rgb(${gray},0,0);"></div>
-    <div class="color-box" style="background-color: rgb(0,${gray},0);"></div>
-    <div class="color-box" style="background-color: rgb(0,0,${gray});"></div>
     
     <div id="sliders">
       <p>RGBスライダー（1つを調整）</p>
