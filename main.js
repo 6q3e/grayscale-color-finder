@@ -18,12 +18,13 @@ let colorInfoOut = document.getElementById('colorInfoOut');
 let colorPalette = document.getElementById('colorPalette');
 
 let currentGray = 128;
+let lock = false;
 
 imageLoader.addEventListener('change', handleImage);
 imageCanvas.addEventListener('click', handleCanvasClick);
-rSlider.addEventListener('input', updateColorFromSlider);
-gSlider.addEventListener('input', updateColorFromSlider);
-bSlider.addEventListener('input', updateColorFromSlider);
+rSlider.addEventListener('input', () => handleSliderInput('R'));
+gSlider.addEventListener('input', () => handleSliderInput('G'));
+bSlider.addEventListener('input', () => handleSliderInput('B'));
 
 function handleImage(e) {
   const reader = new FileReader();
@@ -53,17 +54,34 @@ function handleCanvasClick(e) {
     <p>グレースケール値: ${currentGray}</p>
   `;
 
-  rSlider.value = gSlider.value = bSlider.value = currentGray;
+  rSlider.value = r;
+  gSlider.value = g;
+  bSlider.value = b;
+
   updateColorFromSlider();
 }
 
-function updateColorFromSlider() {
+function handleSliderInput(changed) {
+  if (lock) return;
+  lock = true;
+
   let R = parseInt(rSlider.value);
   let G = parseInt(gSlider.value);
   let B = parseInt(bSlider.value);
 
-  // 制約を計算して値を調整
-  [R, G, B] = adjustRGBWithinGray(R, G, B, currentGray);
+  const gray = currentGray;
+
+  if (changed === 'R') {
+    B = Math.round((gray - 0.299 * R - 0.587 * G) / 0.114);
+  } else if (changed === 'G') {
+    B = Math.round((gray - 0.299 * R - 0.587 * G) / 0.114);
+  } else if (changed === 'B') {
+    G = Math.round((gray - 0.299 * R - 0.114 * B) / 0.587);
+  }
+
+  R = clamp(R, 0, 255);
+  G = clamp(G, 0, 255);
+  B = clamp(B, 0, 255);
 
   rSlider.value = R;
   gSlider.value = G;
@@ -78,29 +96,12 @@ function updateColorFromSlider() {
   colorInfoOut.innerHTML = `RGB: (${R}, ${G}, ${B})<br>HEX: ${hex}`;
 
   drawColorPalette(R, G, B);
+
+  lock = false;
 }
 
-function adjustRGBWithinGray(R, G, B, gray) {
-  const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
-  let grayTarget = gray;
-
-  // R制約（GとBが固定）
-  let rMin = (grayTarget - 0.587 * G - 0.114 * B) / 0.299;
-  let rMax = rMin;
-
-  // G制約（RとBが固定）
-  let gMin = (grayTarget - 0.299 * R - 0.114 * B) / 0.587;
-  let gMax = gMin;
-
-  // B制約（RとGが固定）
-  let bMin = (grayTarget - 0.299 * R - 0.587 * G) / 0.114;
-  let bMax = bMin;
-
-  R = clamp(Math.round(R), Math.floor(rMin), Math.ceil(rMin));
-  G = clamp(Math.round(G), Math.floor(gMin), Math.ceil(gMin));
-  B = clamp(Math.round(B), Math.floor(bMin), Math.ceil(bMin));
-
-  return [R, G, B];
+function clamp(val, min, max) {
+  return Math.max(min, Math.min(max, val));
 }
 
 function drawColorPalette(R, G, B) {
