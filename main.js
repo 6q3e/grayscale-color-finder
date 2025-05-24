@@ -140,4 +140,4 @@ function toHex(n) {
 
 // 初期化
 drawColorPalette(currentGray, currentGray, currentGray);
-updateColorFromSlider();
+handleSliderInput();
