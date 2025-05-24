@@ -1,137 +1,19 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>Grayscale Color Finder</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    canvas { border: 1px solid #ccc; margin-bottom: 10px; display: block; }
-    #color-info { margin-top: 10px; }
-    .color-box {
-      display: inline-block;
-      width: 40px;
-      height: 40px;
-      margin: 0 5px;
-      border: 1px solid #000;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <title>Grayscale Color Finder 🎨</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>Grayscale Color Finder 🎨</h1>
-  
+
   <input type="file" id="imageLoader" accept="image/*">
   <br><br>
   <canvas id="imageCanvas"></canvas>
-  
+
   <div id="color-info"></div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const imageLoader = document.getElementById('imageLoader');
-      const canvas = document.getElementById('imageCanvas');
-      const ctx = canvas.getContext('2d');
-      const colorInfo = document.getElementById('color-info');
-      let lastGray = 128;
-
-      imageLoader.addEventListener('change', handleImage, false);
-      canvas.addEventListener('click', handleClick);
-
-      function handleImage(e) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          const img = new Image();
-          img.onload = function() {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-          };
-          img.src = event.target.result;
-        };
-        reader.readAsDataURL(e.target.files[0]);
-      }
-
-      function handleClick(e) {
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const pixel = ctx.getImageData(x, y, 1, 1).data;
-        const [r, g, b] = pixel;
-        const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
-        lastGray = gray;
-
-        colorInfo.innerHTML = `
-          <p>クリック座標: (${Math.floor(x)}, ${Math.floor(y)})</p>
-          <p>RGB: ${r}, ${g}, ${b}</p>
-          <p>グレースケール値: ${gray}</p>
-          <p>このグレーになる色候補（例）:</p>
-          <div class="color-box" style="background-color: rgb(${gray},0,0);"></div>
-          <div class="color-box" style="background-color: rgb(0,${gray},0);"></div>
-          <div class="color-box" style="background-color: rgb(0,0,${gray});"></div>
-        `;
-
-        const sliderContainer = document.createElement('div');
-        sliderContainer.innerHTML = `
-          <p>このグレーになる色を作成：R, G, B を調整</p>
-          <label>R: <input type="range" min="0" max="255" value="128" id="rRange"> <span id="rValue">128</span></label><br>
-          <label>G: <input type="range" min="0" max="255" value="0" id="gRange"> <span id="gValue">0</span></label><br>
-          <label>B: <input type="range" min="0" max="255" value="0" id="bRange"> <span id="bValue">0</span></label><br>
-          <div class="color-box" id="colorPreview"></div>
-          <p id="colorInfoOut"></p>
-        `;
-        colorInfo.appendChild(sliderContainer);
-
-        const rSlider = document.getElementById('rRange');
-        const gSlider = document.getElementById('gRange');
-        const bSlider = document.getElementById('bRange');
-        const rVal = document.getElementById('rValue');
-        const gVal = document.getElementById('gValue');
-        const bVal = document.getElementById('bValue');
-        const colorPreview = document.getElementById('colorPreview');
-        const colorInfoOut = document.getElementById('colorInfoOut');
-
-        function updateColorFromSlider(source) {
-          let R = parseInt(rSlider.value);
-          let G = parseInt(gSlider.value);
-          let B = parseInt(bSlider.value);
-
-          if (source === 'r') {
-            G = 0;
-            B = Math.round((lastGray - 0.299 * R) / 0.114);  // G=0固定
-          } else if (source === 'g') {
-            R = 0;
-            B = Math.round((lastGray - 0.587 * G) / 0.114);  // R=0固定
-          } else if (source === 'b') {
-            R = 0;
-            G = Math.round((lastGray - 0.114 * B) / 0.587);  // R=0固定
-          }
-
-          R = clamp(R); G = clamp(G); B = clamp(B);
-
-          rSlider.value = R;
-          gSlider.value = G;
-          bSlider.value = B;
-
-          rVal.textContent = R;
-          gVal.textContent = G;
-          bVal.textContent = B;
-
-          colorPreview.style.backgroundColor = `rgb(${R},${G},${B})`;
-          const hex = `#${R.toString(16).padStart(2, '0')}${G.toString(16).padStart(2, '0')}${B.toString(16).padStart(2, '0')}`;
-          colorInfoOut.innerHTML = `RGB: (${R}, ${G}, ${B})<br>HEX: ${hex}`;
-        }
-
-        rSlider.addEventListener('input', () => updateColorFromSlider('r'));
-        gSlider.addEventListener('input', () => updateColorFromSlider('g'));
-        bSlider.addEventListener('input', () => updateColorFromSlider('b'));
-
-        // 初回実行
-        updateColorFromSlider('r');
-      }
-
-      function clamp(val) {
-        return Math.max(0, Math.min(255, Math.round(val)));
-      }
-    });
-  </script>
+  <script src="main.js"></script>
 </body>
 </html>
