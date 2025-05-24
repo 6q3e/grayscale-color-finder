@@ -62,43 +62,50 @@ function handleCanvasClick(e) {
 }
 
 function handleSliderInput(changed) {
-  if (lock) return;
-  lock = true;
-
-  let R = parseInt(rSlider.value);
-  let G = parseInt(gSlider.value);
-  let B = parseInt(bSlider.value);
-
-  const gray = currentGray;
-
-  if (changed === 'R') {
-    B = Math.round((gray - 0.299 * R - 0.587 * G) / 0.114);
-  } else if (changed === 'G') {
-    B = Math.round((gray - 0.299 * R - 0.587 * G) / 0.114);
-  } else if (changed === 'B') {
-    G = Math.round((gray - 0.299 * R - 0.114 * B) / 0.587);
-  }
-
-  R = clamp(R, 0, 255);
-  G = clamp(G, 0, 255);
-  B = clamp(B, 0, 255);
-
-  rSlider.value = R;
-  gSlider.value = G;
-  bSlider.value = B;
-
-  rValue.textContent = R;
-  gValue.textContent = G;
-  bValue.textContent = B;
-
-  colorPreview.style.backgroundColor = `rgb(${R},${G},${B})`;
-  const hex = `#${toHex(R)}${toHex(G)}${toHex(B)}`;
-  colorInfoOut.innerHTML = `RGB: (${R}, ${G}, ${B})<br>HEX: ${hex}`;
-
-  drawColorPalette(R, G, B);
-
-  lock = false;
-}
+    if (lock) return;
+    lock = true;
+  
+    let R = parseInt(rSlider.value);
+    let G = parseInt(gSlider.value);
+    let B = parseInt(bSlider.value);
+    const gray = currentGray;
+  
+    if (changed === 'R') {
+      // Rが変わったら、Bを計算して制限する
+      B = Math.round((gray - 0.299 * R - 0.587 * G) / 0.114);
+      B = clamp(B, 0, 255);
+      bSlider.value = B;
+    } else if (changed === 'G') {
+      B = Math.round((gray - 0.299 * R - 0.587 * G) / 0.114);
+      B = clamp(B, 0, 255);
+      bSlider.value = B;
+    } else if (changed === 'B') {
+      G = Math.round((gray - 0.299 * R - 0.114 * B) / 0.587);
+      G = clamp(G, 0, 255);
+      gSlider.value = G;
+    }
+  
+    // 最終的にR,G,Bを再取得して、範囲を確認
+    R = clamp(parseInt(rSlider.value), 0, 255);
+    G = clamp(parseInt(gSlider.value), 0, 255);
+    B = clamp(parseInt(bSlider.value), 0, 255);
+  
+    rSlider.value = R;
+    gSlider.value = G;
+    bSlider.value = B;
+  
+    rValue.textContent = R;
+    gValue.textContent = G;
+    bValue.textContent = B;
+  
+    colorPreview.style.backgroundColor = `rgb(${R},${G},${B})`;
+    const hex = `#${toHex(R)}${toHex(G)}${toHex(B)}`;
+    colorInfoOut.innerHTML = `RGB: (${R}, ${G}, ${B})<br>HEX: ${hex}`;
+  
+    drawColorPalette(R, G, B);
+  
+    lock = false;
+  }  
 
 function clamp(val, min, max) {
   return Math.max(min, Math.min(max, val));
