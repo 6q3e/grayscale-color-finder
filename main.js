@@ -67,7 +67,7 @@ function handleCanvasClick(e) {
   // UI を表示
   colorTools.style.display = 'block';
 
-  updateColorFromSlider();
+  handleSliderInput(null);
 }
 
 function handleSliderInput(changed) {
