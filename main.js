@@ -45,7 +45,7 @@ function handleImage(e) {
 }
 
 function handleCanvasClick(e) {
-  document.getElementById('sliderContainer').classList.remove('hidden');
+  document.getElementById("colorTools").classList.remove('hidden');
 
   const rect = imageCanvas.getBoundingClientRect();
   const x = e.clientX - rect.left;
@@ -53,8 +53,6 @@ function handleCanvasClick(e) {
   const pixel = ctx.getImageData(x, y, 1, 1).data;
   const [r, g, b] = pixel;
   currentGray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
-
-  document.getElementById("colorTools").classList.remove("hidden");
 
   colorInfo.innerHTML = `
     <p>クリック座標: (${Math.floor(x)}, ${Math.floor(y)})</p>
