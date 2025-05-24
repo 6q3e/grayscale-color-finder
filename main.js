@@ -20,6 +20,8 @@ let colorPalette = document.getElementById('colorPalette');
 let currentGray = 128;
 let lock = false;
 
+let lastValidRGB = { R: 128, G: 128, B: 128 }; // 最後に有効だったRGBを記録
+
 // ページロード時に関連UIを非表示にする
 const colorTools = document.getElementById('colorTools');
 colorTools.style.display = 'none';
@@ -45,90 +47,92 @@ function handleImage(e) {
 }
 
 function handleCanvasClick(e) {
-  document.getElementById("colorTools").classList.remove('hidden');
+    document.getElementById("colorTools").classList.remove('hidden');
+  
+    const rect = imageCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const pixel = ctx.getImageData(x, y, 1, 1).data;
+    const [r, g, b] = pixel;
+    currentGray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+  
+    // ここで lastValidRGB を更新！
+    lastValidRGB = { R: r, G: g, B: b };
+  
+    colorInfo.innerHTML = `
+      <p>クリック座標: (${Math.floor(x)}, ${Math.floor(y)})</p>
+      <p>RGB: ${r}, ${g}, ${b}</p>
+      <p>グレースケール値: ${currentGray}</p>
+    `;
+  
+    rSlider.value = r;
+    gSlider.value = g;
+    bSlider.value = b;
+  
+    colorTools.style.display = 'block';
+  
+    // handleSliderInputを呼び出して色を整える
+    handleSliderInput(null);
+  }  
 
-  const rect = imageCanvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  const pixel = ctx.getImageData(x, y, 1, 1).data;
-  const [r, g, b] = pixel;
-  currentGray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
-
-  colorInfo.innerHTML = `
-    <p>クリック座標: (${Math.floor(x)}, ${Math.floor(y)})</p>
-    <p>RGB: ${r}, ${g}, ${b}</p>
-    <p>グレースケール値: ${currentGray}</p>
-  `;
-
-  rSlider.value = r;
-  gSlider.value = g;
-  bSlider.value = b;
-
-  // UI を表示
-  colorTools.style.display = 'block';
-
-  handleSliderInput(null);
-}
-
-function handleSliderInput(changed) {
+  function handleSliderInput(changed) {
     if (lock) return;
     lock = true;
   
-    // 現在のスライダー値を取得
-    let inputR = parseInt(rSlider.value);
-    let inputG = parseInt(gSlider.value);
-    let inputB = parseInt(bSlider.value);
+    let R = parseInt(rSlider.value);
+    let G = parseInt(gSlider.value);
+    let B = parseInt(bSlider.value);
   
-    let R = inputR, G = inputG, B = inputB;
+    let gray = currentGray;
   
-    const gray = currentGray;
-  
-    // 一時的に計算
-    let calcR = R, calcG = G, calcB = B;
+    let newR = R, newG = G, newB = B;
   
     if (changed === 'R') {
-      calcB = Math.round((gray - 0.299 * R - 0.587 * G) / 0.114);
+      newB = Math.round((gray - 0.299 * R - 0.587 * G) / 0.114);
     } else if (changed === 'G') {
-      calcB = Math.round((gray - 0.299 * R - 0.587 * G) / 0.114);
+      newB = Math.round((gray - 0.299 * R - 0.587 * G) / 0.114);
     } else if (changed === 'B') {
-      calcG = Math.round((gray - 0.299 * R - 0.114 * B) / 0.587);
+      newG = Math.round((gray - 0.299 * R - 0.114 * B) / 0.587);
     }
   
-    // 条件チェック：いずれかが範囲外なら打ち消す
-    if (
-      calcR < 0 || calcR > 255 ||
-      calcG < 0 || calcG > 255 ||
-      calcB < 0 || calcB > 255
-    ) {
-      // 元の状態に戻す
-      rSlider.value = R;
-      gSlider.value = G;
-      bSlider.value = B;
+    // 制限チェック
+    if (newR < 0 || newR > 255 || newG < 0 || newG > 255 || newB < 0 || newB > 255) {
+      // 不正な値 → スライダーも前回の値に戻す
+      rSlider.value = lastValidRGB.R;
+      gSlider.value = lastValidRGB.G;
+      bSlider.value = lastValidRGB.B;
+  
+      rValue.textContent = lastValidRGB.R;
+      gValue.textContent = lastValidRGB.G;
+      bValue.textContent = lastValidRGB.B;
+  
+      colorPreview.style.backgroundColor = `rgb(${lastValidRGB.R},${lastValidRGB.G},${lastValidRGB.B})`;
+      const hex = `#${toHex(lastValidRGB.R)}${toHex(lastValidRGB.G)}${toHex(lastValidRGB.B)}`;
+      colorInfoOut.innerHTML = `RGB: (${lastValidRGB.R}, ${lastValidRGB.G}, ${lastValidRGB.B})<br>HEX: ${hex}`;
+  
+      drawColorPalette(lastValidRGB.R, lastValidRGB.G, lastValidRGB.B);
       lock = false;
       return;
     }
   
-    // 新しいRGBとして代入（ここまで来たら条件を満たしている）
-    R = clamp(calcR, 0, 255);
-    G = clamp(calcG, 0, 255);
-    B = clamp(calcB, 0, 255);
+    // 有効な値なら更新
+    lastValidRGB = { R: newR, G: newG, B: newB };
   
-    rSlider.value = R;
-    gSlider.value = G;
-    bSlider.value = B;
+    rSlider.value = newR;
+    gSlider.value = newG;
+    bSlider.value = newB;
   
-    rValue.textContent = R;
-    gValue.textContent = G;
-    bValue.textContent = B;
+    rValue.textContent = newR;
+    gValue.textContent = newG;
+    bValue.textContent = newB;
   
-    colorPreview.style.backgroundColor = `rgb(${R},${G},${B})`;
-    const hex = `#${toHex(R)}${toHex(G)}${toHex(B)}`;
-    colorInfoOut.innerHTML = `RGB: (${R}, ${G}, ${B})<br>HEX: ${hex}`;
+    colorPreview.style.backgroundColor = `rgb(${newR},${newG},${newB})`;
+    const hex = `#${toHex(newR)}${toHex(newG)}${toHex(newB)}`;
+    colorInfoOut.innerHTML = `RGB: (${newR}, ${newG}, ${newB})<br>HEX: ${hex}`;
   
-    drawColorPalette(R, G, B);
-  
+    drawColorPalette(newR, newG, newB);
     lock = false;
-  }  
+  }    
 
 function clamp(val, min, max) {
   return Math.max(min, Math.min(max, val));
