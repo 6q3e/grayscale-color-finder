@@ -1,3 +1,5 @@
+// main.js
+
 let imageCanvas = document.getElementById('imageCanvas');
 let ctx = imageCanvas.getContext('2d');
 let colorInfo = document.getElementById('color-info');
@@ -17,6 +19,10 @@ let colorPalette = document.getElementById('colorPalette');
 
 let currentGray = 128;
 let lock = false;
+
+// ページロード時に関連UIを非表示にする
+const colorTools = document.getElementById('colorTools');
+colorTools.style.display = 'none';
 
 imageLoader.addEventListener('change', handleImage);
 imageCanvas.addEventListener('click', handleCanvasClick);
@@ -56,6 +62,9 @@ function handleCanvasClick(e) {
   gSlider.value = g;
   bSlider.value = b;
 
+  // UI を表示
+  colorTools.style.display = 'block';
+
   updateColorFromSlider();
 }
 
@@ -69,36 +78,32 @@ function handleSliderInput(changed) {
 
   const gray = currentGray;
 
-  // 各スライダーの入力に応じて他の値を調整
+  let newR = R, newG = G, newB = B;
   if (changed === 'R') {
-    const maxB = Math.floor((gray - 0.299 * R - 0.587 * G) / 0.114);
-    B = clamp(maxB, 0, 255);
+    newB = Math.round((gray - 0.299 * R - 0.587 * G) / 0.114);
   } else if (changed === 'G') {
-    const maxB = Math.floor((gray - 0.299 * R - 0.587 * G) / 0.114);
-    B = clamp(maxB, 0, 255);
+    newB = Math.round((gray - 0.299 * R - 0.587 * G) / 0.114);
   } else if (changed === 'B') {
-    const maxG = Math.floor((gray - 0.299 * R - 0.114 * B) / 0.587);
-    G = clamp(maxG, 0, 255);
+    newG = Math.round((gray - 0.299 * R - 0.114 * B) / 0.587);
   }
 
-  // RGBを0~255の範囲に制限
-  R = clamp(R, 0, 255);
-  G = clamp(G, 0, 255);
-  B = clamp(B, 0, 255);
+  newR = clamp(newR, 0, 255);
+  newG = clamp(newG, 0, 255);
+  newB = clamp(newB, 0, 255);
 
-  rSlider.value = R;
-  gSlider.value = G;
-  bSlider.value = B;
+  rSlider.value = newR;
+  gSlider.value = newG;
+  bSlider.value = newB;
 
-  rValue.textContent = R;
-  gValue.textContent = G;
-  bValue.textContent = B;
+  rValue.textContent = newR;
+  gValue.textContent = newG;
+  bValue.textContent = newB;
 
-  colorPreview.style.backgroundColor = `rgb(${R},${G},${B})`;
-  const hex = `#${toHex(R)}${toHex(G)}${toHex(B)}`;
-  colorInfoOut.innerHTML = `RGB: (${R}, ${G}, ${B})<br>HEX: ${hex}`;
+  colorPreview.style.backgroundColor = `rgb(${newR},${newG},${newB})`;
+  const hex = `#${toHex(newR)}${toHex(newG)}${toHex(newB)}`;
+  colorInfoOut.innerHTML = `RGB: (${newR}, ${newG}, ${newB})<br>HEX: ${hex}`;
 
-  drawColorPalette(R, G, B);
+  drawColorPalette(newR, newG, newB);
 
   lock = false;
 }
@@ -129,7 +134,6 @@ function drawColorPalette(R, G, B) {
 
   ctxP.putImageData(imageData, 0, 0);
 
-  // 赤い枠を描画
   const posX = Math.round((R / 255) * w);
   const posY = Math.round((G / 255) * h);
   ctxP.strokeStyle = 'red';
@@ -140,11 +144,3 @@ function drawColorPalette(R, G, B) {
 function toHex(n) {
   return n.toString(16).padStart(2, '0');
 }
-
-function updateColorFromSlider() {
-  handleSliderInput('R');
-}
-
-// 初期化
-drawColorPalette(currentGray, currentGray, currentGray);
-updateColorFromSlider();
