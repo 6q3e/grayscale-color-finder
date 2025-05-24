@@ -3,52 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <title>Grayscale Color Finder</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-    }
-    canvas {
-      border: 1px solid #ccc;
-      margin-bottom: 10px;
-    }
-    .hidden {
-      display: none;
-    }
-    .color-box {
-      display: inline-block;
-      width: 40px;
-      height: 40px;
-      margin: 0 5px;
-      border: 1px solid #000;
-    }
-    #colorTools {
-      margin-top: 20px;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>Grayscale Color Finder 🎨</h1>
+  <div class="container">
+    <div class="left-panel">
+      <input type="file" id="imageLoader" accept="image/*"><br><br>
+      <div id="canvasWrapper">
+        <canvas id="imageCanvas"></canvas>
+      </div>
+    </div>
 
-  <input type="file" id="imageLoader" accept="image/*">
-  <br><br>
-  <canvas id="imageCanvas"></canvas>
+    <div class="right-panel">
+      <div id="color-info"></div>
 
-  <div id="color-info"></div>
-
-  <!-- スライダー・カラーパレットなど -->
-  <div id="colorTools" class="hidden">
-    <p>このグレースケール値になる色を作る：</p>
-    <label>R: <input type="range" min="0" max="255" value="128" id="rRange"> <span id="rValue">128</span></label><br>
-    <label>G: <input type="range" min="0" max="255" value="128" id="gRange"> <span id="gValue">128</span></label><br>
-    <label>B: <input type="range" min="0" max="255" value="128" id="bRange"> <span id="bValue">128</span></label><br>
-    
-    <div class="color-box" id="colorPreview"></div>
-    <p id="colorInfoOut"></p>
-    <canvas id="colorPalette" width="256" height="256"></canvas>
+      <div id="colorTools" class="hidden">
+        <p>このグレースケール値になる色を作る：</p>
+        <label>R: <input type="range" min="0" max="255" value="128" id="rRange"> <span id="rValue">128</span></label>
+        <label>G: <input type="range" min="0" max="255" value="128" id="gRange"> <span id="gValue">128</span></label>
+        <label>B: <input type="range" min="0" max="255" value="128" id="bRange"> <span id="bValue">128</span></label>
+        <div class="color-box" id="colorPreview"></div>
+        <p id="colorInfoOut"></p>
+        <canvas id="colorPalette" width="256" height="256"></canvas>
+      </div>
+    </div>
   </div>
 
-  <!-- JavaScriptファイルの読み込み -->
   <script src="main.js"></script>
 </body>
 </html>

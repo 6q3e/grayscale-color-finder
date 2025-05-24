@@ -22,6 +22,12 @@ let lock = false;
 
 let lastValidRGB = { R: 128, G: 128, B: 128 }; // 最後に有効だったRGBを記録
 
+// === 追加: ズーム・ドラッグ処理 ===
+let scale = 1;
+let originX = 0, originY = 0;
+let isDragging = false;
+let dragStart = { x: 0, y: 0 };
+
 // ページロード時に関連UIを非表示にする
 const colorTools = document.getElementById('colorTools');
 colorTools.style.display = 'none';
@@ -32,19 +38,60 @@ rSlider.addEventListener('input', () => handleSliderInput('R'));
 gSlider.addEventListener('input', () => handleSliderInput('G'));
 bSlider.addEventListener('input', () => handleSliderInput('B'));
 
+const canvasWrapper = document.getElementById("canvasWrapper");
+
+imageCanvas.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    scale = Math.min(Math.max(scale + delta, 0.1), 5);
+    updateTransform();
+  });
+  
+  imageCanvas.addEventListener("mousedown", (e) => {
+    isDragging = true;
+    dragStart.x = e.clientX - originX;
+    dragStart.y = e.clientY - originY;
+    imageCanvas.style.cursor = "grabbing";
+  });
+  
+  imageCanvas.addEventListener("mousemove", (e) => {
+    if (isDragging) {
+      originX = e.clientX - dragStart.x;
+      originY = e.clientY - dragStart.y;
+      updateTransform();
+    }
+  });
+  
+  imageCanvas.addEventListener("mouseup", () => {
+    isDragging = false;
+    imageCanvas.style.cursor = "grab";
+  });
+  imageCanvas.addEventListener("mouseleave", () => {
+    isDragging = false;
+    imageCanvas.style.cursor = "grab";
+  });
+
 function handleImage(e) {
-  const reader = new FileReader();
-  reader.onload = function(event) {
-    const img = new Image();
-    img.onload = function() {
-      imageCanvas.width = img.width;
-      imageCanvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const img = new Image();
+      img.onload = function() {
+        imageCanvas.width = img.width;
+        imageCanvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        scale = 1;
+        originX = 0;
+        originY = 0;
+        updateTransform();
+      };
+      img.src = event.target.result;
     };
-    img.src = event.target.result;
-  };
-  reader.readAsDataURL(e.target.files[0]);
-}
+    reader.readAsDataURL(e.target.files[0]);
+  }
+
+function updateTransform() {
+    imageCanvas.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+  }
 
 function handleCanvasClick(e) {
     document.getElementById("colorTools").classList.remove('hidden');
