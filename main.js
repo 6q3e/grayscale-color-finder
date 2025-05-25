@@ -180,11 +180,11 @@ function handleCanvasClick(e) {
     document.getElementById('grayscaleBox').style.backgroundColor = toHex(currentGray);
   
     colorInfo.innerHTML = `
-      <p>クリック座標: (${Math.floor(originalX)}, ${Math.floor(originalY)})</p>
-      <p>RGB: (${r}, ${g}, ${b})</p>
-      <p>HEX: #${toHex(r)}${toHex(g)}${toHex(b)}</p>
-      <p>グレースケールRGB: (${currentGray}, ${currentGray}, ${currentGray})</p>
-      <p>グレースケールHEX: #${toHex(currentGray)}${toHex(currentGray)}${toHex(currentGray)}</p>
+      <p>クリック座標: (${Math.floor(originalX)}, ${Math.floor(originalY)})<br>
+      RGB: (${r}, ${g}, ${b})<br>
+      HEX: #${toHex(r)}${toHex(g)}${toHex(b)}<br>
+      グレースケールRGB: (${currentGray}, ${currentGray}, ${currentGray})<br>
+      グレースケールHEX: #${toHex(currentGray)}${toHex(currentGray)}${toHex(currentGray)}</p>
     `;
   
     rSlider.value = r;
