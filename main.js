@@ -288,3 +288,14 @@ function drawColorPalette(R, G, B) {
 function toHex(n) {
   return n.toString(16).padStart(2, '0');
 }
+
+fetch("https://raw.githubusercontent.com/6q3e/grayscale-color-finder/main/README.md")
+  .then(response => response.text())
+  .then(markdown => {
+    const html = marked.parse(markdown);
+    document.getElementById("readmeContent").innerHTML = html;
+  })
+  .catch(error => {
+    document.getElementById("readmeContent").textContent = "READMEを読み込めませんでした。";
+    console.error(error);
+  });
