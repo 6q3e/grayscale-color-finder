@@ -176,17 +176,16 @@ function handleCanvasClick(e) {
     // ここで lastValidRGB を更新！
     lastValidRGB = { R: r, G: g, B: b };
 
-    const grayscaleHex = '#' + toHex(currentGray) + toHex(currentGray) + toHex(currentGray);
-
     // 表示の更新
     document.getElementById('grayscaleBox').style.backgroundColor = grayscaleHex;
     document.getElementById('grayscaleHex').textContent = grayscaleHex;
   
     colorInfo.innerHTML = `
       <p>クリック座標: (${Math.floor(originalX)}, ${Math.floor(originalY)})</p>
-      <p>RGB: ${r}, ${g}, ${b}</p>
+      <p>RGB: (${r}, ${g}, ${b})</p>
       <p>HEX: #${toHex(r)}${toHex(g)}${toHex(b)}</p>
-      <p>グレースケール値: ${currentGray}</p>
+      <p>グレースケールRGB: (${currentGray}, ${currentGray}, ${currentGray})</p>
+      <p>グレースケールHEX: #${toHex(currentGray)}${toHex(currentGray)}${toHex(currentGray)}</p>
     `;
   
     rSlider.value = r;

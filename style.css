@@ -87,10 +87,6 @@ body {
     border: 1px solid #ccc;
     background-color: #808080;
   }
-  #grayscaleHex {
-    margin: 0;
-    font-family: monospace;
-  }  
 
   footer#readme {
     font-family: sans-serif;
