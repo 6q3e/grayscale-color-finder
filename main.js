@@ -20,6 +20,8 @@ let colorPalette = document.getElementById('colorPalette');
 let currentGray = 128;
 let lock = false;
 
+let crosshairPos = null; // 赤十字の表示位置
+
 let lastValidRGB = { R: 128, G: 128, B: 128 }; // 最後に有効だったRGBを記録
 
 // === 追加: ズーム・ドラッグ処理 ===
@@ -86,16 +88,31 @@ function clampOffset() {
   
 function drawImage() {
     if (!canvasImage) return;
-  
+
     const width = canvasImage.width * scale;
     const height = canvasImage.height * scale;
-  
+
     imageCanvas.width = width;
     imageCanvas.height = height;
-  
+
     ctx.clearRect(0, 0, width, height);
     ctx.drawImage(canvasImage, 0, 0, width, height);
-  }
+
+    if (crosshairPos) {
+        const x = crosshairPos.x * scale;
+        const y = crosshairPos.y * scale;
+
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x - 5, y);
+        ctx.lineTo(x + 5, y);
+        ctx.moveTo(x, y - 5);
+        ctx.lineTo(x, y + 5);
+        ctx.stroke();
+    }
+}
+
 
 function handleImage(e) {
     const reader = new FileReader();
@@ -128,11 +145,12 @@ function handleCanvasClick(e) {
     document.getElementById("colorTools").classList.remove('hidden');
   
     const rect = imageCanvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = e.clientX - rect.left / scale;
+    const y = e.clientY - rect.top / scale;
     const pixel = ctx.getImageData(x, y, 1, 1).data;
     const [r, g, b] = pixel;
     currentGray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+    crosshairPos = { x, y };
   
     // ここで lastValidRGB を更新！
     lastValidRGB = { R: r, G: g, B: b };
@@ -151,6 +169,7 @@ function handleCanvasClick(e) {
   
     // handleSliderInputを呼び出して色を整える
     handleSliderInput(null);
+    drawImage(); // 十字表示のため再描画
   }  
 
   function handleSliderInput(changed) {
