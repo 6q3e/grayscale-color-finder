@@ -179,6 +179,7 @@ function handleCanvasClick(e) {
     colorInfo.innerHTML = `
       <p>クリック座標: (${Math.floor(originalX)}, ${Math.floor(originalY)})</p>
       <p>RGB: ${r}, ${g}, ${b}</p>
+      <p>HEX: #${toHex(newR)}${toHex(newG)}${toHex(newB)}</p>
       <p>グレースケール値: ${currentGray}</p>
     `;
   
