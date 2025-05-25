@@ -12,6 +12,8 @@ body {
   .container {
     display: flex;
     height: calc(100vh - 80px);
+    padding: 0 10px;
+    box-sizing: border-box;
   }
   
   .left-panel {
@@ -22,6 +24,14 @@ body {
     overflow: hidden;
     border-right: 1px solid #ccc;
     padding-left: 20px;
+    margin-right: 10px;
+  }
+  
+  .right-panel {
+    font-size: 20px;
+    line-height: 1.2;
+    overflow-y: auto;
+    padding-right: 10px;
   }
   
   #canvasWrapper {
@@ -40,12 +50,6 @@ body {
   #imageCanvas.dragging {
     cursor: grabbing;
   }  
-  
-  .right-panel {
-    font-size: 20px;
-    line-height: 1.2;
-    overflow-y: auto;
-  }
   
   #color-info {
     margin-bottom: 10px;
