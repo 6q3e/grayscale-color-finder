@@ -75,6 +75,23 @@ body {
     display: none;
   }
 
+  #grayscaleColorDisplay {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  #grayscaleBox {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #ccc;
+    background-color: #808080;
+  }
+  #grayscaleHex {
+    margin: 0;
+    font-family: monospace;
+  }  
+
   footer#readme {
     font-family: sans-serif;
     font-size: 14px;
