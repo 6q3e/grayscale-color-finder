@@ -177,7 +177,9 @@ function handleCanvasClick(e) {
     lastValidRGB = { R: r, G: g, B: b };
 
     // 表示の更新
-    document.getElementById('grayscaleBox').style.backgroundColor = toHex(currentGray);
+    const grayHex = `#${toHex(currentGray)}${toHex(currentGray)}${toHex(currentGray)}`;
+    document.getElementById('grayscaleBox').style.backgroundColor = grayHex;
+
   
     colorInfo.innerHTML = `
       <p>クリック座標: (${Math.floor(originalX)}, ${Math.floor(originalY)})<br>

@@ -44,6 +44,7 @@ body {
   .right-panel {
     font-size: 20px;
     line-height: 1.2;
+    overflow-y: auto;
   }
   
   #color-info {
