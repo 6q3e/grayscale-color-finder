@@ -42,9 +42,15 @@ body {
   }  
   
   .right-panel {
-    width: 40%;
-    padding: 20px;
+    font-size: 12px;
+    line-height: 1.2;
     overflow-y: auto;
+    max-height: 100vh;
+  }
+
+  .right-panel label {
+    display: block;
+    margin: 4px 0;         /* 縦の余白を小さく */
   }
   
   #color-info {
