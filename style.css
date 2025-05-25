@@ -73,4 +73,28 @@ body {
   
   .hidden {
     display: none;
+  }
+
+  footer#readme {
+    font-family: sans-serif;
+    font-size: 14px;
+    background-color: #f9f9f9;
+    color: #333;
+    line-height: 1.6;
+    padding: 20px;
+  }
+  footer#readme h2 {
+    font-size: 18px;
+    margin-bottom: 0.5em;
+  }
+  footer#readme h3 {
+    font-size: 16px;
+    margin-top: 1em;
+  }
+  footer#readme ul {
+    padding-left: 20px;
+  }
+  footer#readme a {
+    color: #0366d6;
+    text-decoration: underline;
   }  
