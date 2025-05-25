@@ -163,18 +163,21 @@ function handleCanvasClick(e) {
     document.getElementById("colorTools").classList.remove('hidden');
   
     const rect = imageCanvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / scale;
-    const y = (e.clientY - rect.top) / scale;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
     const pixel = ctx.getImageData(x, y, 1, 1).data;
     const [r, g, b] = pixel;
     currentGray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
-    crosshairPos = { x, y };
+
+    const originalX = x / scale;
+    const originalY = y / scale;
+    crosshairPos = { x: originalX, y: originalY };
   
     // ここで lastValidRGB を更新！
     lastValidRGB = { R: r, G: g, B: b };
   
     colorInfo.innerHTML = `
-      <p>クリック座標: (${Math.floor(x)}, ${Math.floor(y)})</p>
+      <p>クリック座標: (${Math.floor(originalX)}, ${Math.floor(originalY)})</p>
       <p>RGB: ${r}, ${g}, ${b}</p>
       <p>グレースケール値: ${currentGray}</p>
     `;
