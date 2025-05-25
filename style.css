@@ -47,11 +47,6 @@ body {
     overflow-y: auto;
     max-height: 100vh;
   }
-
-  .right-panel label {
-    display: block;
-    margin: 4px 0;         /* 縦の余白を小さく */
-  }
   
   #color-info {
     margin-bottom: 10px;
