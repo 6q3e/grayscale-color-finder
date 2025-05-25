@@ -47,13 +47,31 @@ const canvasWrapper = document.getElementById("canvasWrapper");
 
 imageCanvas.addEventListener("wheel", (e) => {
     e.preventDefault();
+
+    const rect = imageCanvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left + canvasWrapper.scrollLeft;
+    const mouseY = e.clientY - rect.top + canvasWrapper.scrollTop;
+
+    const xRatio = mouseX / (imageCanvas.width);
+    const yRatio = mouseY / (imageCanvas.height);
+
     const oldScale = scale;
     const delta = e.deltaY > 0 ? -0.1 : 0.1;
-    scale = Math.max(minScale, scale + delta); // minScale以下にしない
+    scale = Math.max(minScale, scale + delta);
     if (scale === oldScale) return;
-  
+
+    const newWidth = canvasImage.width * scale;
+    const newHeight = canvasImage.height * scale;
+
+    imageCanvas.width = newWidth;
+    imageCanvas.height = newHeight;
+
+    // スクロール位置を補正
+    canvasWrapper.scrollLeft = (newWidth * xRatio) - (rect.width / 2);
+    canvasWrapper.scrollTop = (newHeight * yRatio) - (rect.height / 2);
+
     drawImage();
-  });
+});
   
   // ドラッグによる移動
   imageCanvas.addEventListener("mousedown", (e) => {
@@ -145,8 +163,8 @@ function handleCanvasClick(e) {
     document.getElementById("colorTools").classList.remove('hidden');
   
     const rect = imageCanvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = (e.clientX - rect.left) / scale;
+    const y = (e.clientY - rect.top) / scale;
     const pixel = ctx.getImageData(x, y, 1, 1).data;
     const [r, g, b] = pixel;
     currentGray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
