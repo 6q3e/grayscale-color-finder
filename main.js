@@ -304,3 +304,15 @@ fetch("https://raw.githubusercontent.com/6q3e/grayscale-color-finder/main/README
     document.getElementById("readmeContent").textContent = "READMEを読み込めませんでした。";
     console.error(error);
   });
+
+  fetch('https://raw.githubusercontent.com/6q3e/grayscale-color-finder/main/README.md')
+  .then(response => response.text())
+  .then(text => {
+    const html = marked.parse(text);
+    document.getElementById('readmeContent').innerHTML = html;
+
+    // MathJax がロードされていれば再処理
+    if (window.MathJax && window.MathJax.typeset) {
+      window.MathJax.typeset();
+    }
+  });
